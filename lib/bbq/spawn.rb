@@ -41,15 +41,14 @@ module Bbq
 
       def join
         Timeout::timeout(@timeout) do
-          wait_for_io
-          wait_for_socket
+          wait_for_io if @banner
+          wait_for_socket if @port and @host
         end
       rescue Timeout::Error
       end
 
       private
       def wait_for_io
-        return unless @banner
         loop do
           case @reader.readpartial(8192)
           when @banner then break
@@ -59,8 +58,6 @@ module Bbq
       end
 
       def wait_for_socket
-        return unless @host and @port
-
         socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
         addr   = Socket.pack_sockaddr_in(@port, @host)
 
