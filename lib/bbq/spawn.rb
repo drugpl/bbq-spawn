@@ -64,6 +64,8 @@ module Bbq
         socket.connect(addr)
       rescue Errno::ECONNREFUSED
         retry
+      ensure
+        socket.close
       end
     end
 
