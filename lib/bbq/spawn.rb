@@ -1,6 +1,8 @@
 require "bbq/spawn/version"
 require "childprocess"
 require "forwardable"
+require "socket"
+require "timeout"
 
 module Bbq
   module Spawn
@@ -21,9 +23,13 @@ module Bbq
 
       def_delegators :@executor, :stop
 
-      def initialize(executor, banner)
+      def initialize(executor, options = {})
         @executor = executor
-        @banner   = banner
+        @timeout  = options.fetch(:timeout, 10)
+        @banner   = options[:banner]
+        @host     = options[:host]
+        @port     = options[:port]
+
         @reader, @writer = IO.pipe
       end
 
@@ -34,6 +40,15 @@ module Bbq
       end
 
       def join
+        Timeout::timeout(@timeout) do
+          wait_for_io
+          wait_for_socket
+        end
+      rescue Timeout::Error
+      end
+
+      private
+      def wait_for_io
         return unless @banner
         loop do
           case @reader.readpartial(8192)
@@ -42,6 +57,17 @@ module Bbq
         end
       rescue EOFError
       end
+
+      def wait_for_socket
+        return unless @host and @port
+
+        socket = Socket.new(Socket::AF_INET, Socket::SOCK_STREAM, 0)
+        addr   = Socket.pack_sockaddr_in(@port, @host)
+
+        socket.connect(addr)
+      rescue Errno::ECONNREFUSED
+        retry
+      end
     end
 
     class Orchestrator
@@ -49,8 +75,8 @@ module Bbq
         @executors = []
       end
 
-      def coordinate(executor, wait_banner = nil)
-        @executors << CoordinatedExecutor.new(executor, wait_banner)
+      def coordinate(executor, options = {})
+        @executors << CoordinatedExecutor.new(executor, options)
       end
 
       def start
