@@ -3,6 +3,7 @@ require "childprocess"
 require "forwardable"
 require "socket"
 require "timeout"
+require "net/http"
 
 module Bbq
   module Spawn
@@ -29,6 +30,7 @@ module Bbq
         @banner   = options[:banner]
         @host     = options[:host]
         @port     = options[:port]
+        @url      = options[:url]
 
         @reader, @writer = IO.pipe
       end
@@ -40,9 +42,10 @@ module Bbq
       end
 
       def join
-        Timeout::timeout(@timeout) do
-          wait_for_io if @banner
-          wait_for_socket if @port and @host
+        Timeout.timeout(@timeout) do
+          wait_for_io       if @banner
+          wait_for_socket   if @port and @host
+          wait_for_response if @url
         end
       rescue Timeout::Error
       end
@@ -66,6 +69,18 @@ module Bbq
         retry
       ensure
         socket.close
+      end
+
+      def wait_for_response
+        begin
+          Net::HTTP.start(@url) do |http|
+            http.open_timeout = 5
+            http.read_timeout = 5
+            http.head('/')
+          end
+        rescue SocketError
+          retry
+        end
       end
     end
 
