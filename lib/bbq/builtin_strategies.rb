@@ -1,4 +1,4 @@
-module Bbq_
+module Bbq
   module Spawn
     module IOStrategy
       class Squelch

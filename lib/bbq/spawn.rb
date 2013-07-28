@@ -5,7 +5,7 @@ require "socket"
 require "timeout"
 require "net/http"
 
-module Bbq_
+module Bbq
   module Spawn
     class Executor
       extend Forwardable
