@@ -3,7 +3,7 @@ module Bbq
     module IOStrategy
       class Squelch
         def initialize
-          _, @writer = IO.pipe
+          reader, @writer = IO.pipe
         end
 
         def run(io)
