@@ -35,7 +35,7 @@ module Bbq
         @host     = options[:host]
         @port     = options[:port]
         @url      = options[:url]
-        @strategy = options[:strategy] || IOStrategy::Squelch.new
+        @strategy = options.fetch(:strategy, IOStrategy::Squelch.new)
 
         @reader, @writer = IO.pipe
       end
@@ -43,6 +43,7 @@ module Bbq
       def start
         @strategy.run(@executor.io)
         @executor.start
+        @strategy.after_run if @strategy.respond_to? :after_run
       end
 
       def join
