@@ -35,9 +35,10 @@ module Bbq
         @host     = options[:host]
         @port     = options[:port]
         @url      = options[:url]
-        @strategy = options.fetch(:strategy, IOStrategy::Squelch.new)
 
         @reader, @writer = IO.pipe
+        
+        @strategy = options.fetch(:strategy, IOStrategy::Squelch.new(@writer))
       end
 
       def start

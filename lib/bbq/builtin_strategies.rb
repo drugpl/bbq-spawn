@@ -2,17 +2,16 @@ module Bbq
   module Spawn
     module IOStrategy
       class Squelch
-        def initialize
-#          reader, @writer = IO.pipe
+        def initialize(writer)
+          @writer = writer
         end
 
         def run(io)
-#          io.stdout = io.stderr = @writer
-          puts "kaboom"
+          io.stdout = io.stderr = @writer
         end
 
         def after_spawn
-#          @writer.close
+          @writer.close
         end
       end
 
