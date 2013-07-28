@@ -38,7 +38,7 @@ module Bbq
 
         @reader, @writer = IO.pipe
         
-        @strategy = options.fetch(:strategy, IOStrategy::Squelch.new(@writer))
+        @strategy = options[:strategy] || IOStrategy::Squelch.new(@writer))
       end
 
       def start
