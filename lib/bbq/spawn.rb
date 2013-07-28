@@ -1,4 +1,5 @@
 require "bbq/spawn/version"
+require 'bbq/builtin_strategies'
 require "childprocess"
 require "forwardable"
 require "socket"
