@@ -11,6 +11,12 @@ module Bbq
           @writer.close
         end
       end
+
+      class Inherit
+        def run(io)
+          io.inherit!
+        end
+      end
     end
   end
 end
