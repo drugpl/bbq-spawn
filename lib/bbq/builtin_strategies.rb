@@ -8,6 +8,9 @@ module Bbq
 
         def run(io)
           io.stdout = io.stderr = @writer
+        end
+
+        def after_spawn
           @writer.close
         end
       end

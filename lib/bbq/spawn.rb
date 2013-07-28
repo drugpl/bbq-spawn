@@ -43,6 +43,7 @@ module Bbq
       def start
         @strategy.run(@executor.io)
         @executor.start
+        @strategy.after_spawn if @strategy.respond_to? :after_spawn
       end
 
       def join
