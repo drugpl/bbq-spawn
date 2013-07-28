@@ -5,14 +5,17 @@ require "socket"
 require "timeout"
 require "net/http"
 
-module Bbq
+module Bbq_
   module Spawn
     class Executor
       extend Forwardable
 
+      attr_accessor :io_strategy
+
       def_delegators :@process, :start, :stop, :io
 
       def initialize(*args)
+        @strategy = :mute
         @process = ChildProcess.build(*args)
         yield @process if block_given?
         @process
@@ -31,14 +34,14 @@ module Bbq
         @host     = options[:host]
         @port     = options[:port]
         @url      = options[:url]
+        @strategy = options[:strategy] || IOStrategy::Squelch.new
 
         @reader, @writer = IO.pipe
       end
 
       def start
-        @executor.io.stdout = @executor.io.stderr = @writer
+        @strategy.run(@executor.io)
         @executor.start
-        @writer.close
       end
 
       def join
