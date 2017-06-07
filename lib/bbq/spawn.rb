@@ -53,7 +53,6 @@ module Bbq
           wait_for_socket   if @port and @host
           wait_for_response if @url
         end
-      rescue Timeout::Error
       end
 
       private
