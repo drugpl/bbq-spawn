@@ -4,6 +4,7 @@ require "childprocess"
 require "forwardable"
 require "socket"
 require "timeout"
+require "uri"
 require "net/http"
 
 module Bbq
@@ -37,7 +38,7 @@ module Bbq
         @url      = options[:url]
 
         @reader, @writer = IO.pipe
-        
+
         @strategy = options[:strategy] || IOStrategy::Squelch.new(@writer)
       end
 
@@ -77,13 +78,14 @@ module Bbq
       end
 
       def wait_for_response
+        uri = URI.parse(@url)
         begin
-          Net::HTTP.start(@url) do |http|
+          Net::HTTP.start(uri.host, uri.port) do |http|
             http.open_timeout = 5
             http.read_timeout = 5
-            http.head('/')
+            http.head(uri.path)
           end
-        rescue SocketError
+        rescue SocketError, IOError, Errno::EINVAL, Errno::ECONNRESET, Errno::ECONNREFUSED, EOFError, Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError
           retry
         end
       end
