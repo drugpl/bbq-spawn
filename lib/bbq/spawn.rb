@@ -59,9 +59,8 @@ module Bbq
       private
       def wait_for_io
         loop do
-          case @reader.readpartial(8192)
-          when @banner then break
-          end
+          output = @reader.readpartial(8192)
+          break if output.include?(@banner)
         end
       rescue EOFError
       end
